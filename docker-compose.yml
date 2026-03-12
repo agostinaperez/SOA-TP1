@@ -1,22 +1,20 @@
-version: '3.8'
-name: 'kafka-tp' #nombre del proyecto, no es el nombre del contenedor
-
 services:
   broker:
     image: apache/kafka:latest #imagen oficial de kafka
     container_name: kafka-broker
     ports:
       - "${KAFKA_PORT:-9092}:9092" #mapeo el puerto 9092
+      - "${KAFKA_EXTERNAL_PORT:-29092}:29092" #mapeo el puerto 29092
     environment:
       KAFKA_NODE_ID: ${KAFKA_NODE_ID:-1}
       #Esto es para KRaft, actúa como broker y contolador, sin  necesidad de zookeeper (un proceso que se usaba antes para coordinar los brokers, pero ahora con KRaft ya no es necesario)
       KAFKA_PROCESS_ROLES: broker,controller
       #Acá escucha en 2 puertos, uno para los clientes spring boot y kafka-ui (9092) y otro para la comunicación entre controladores (9093)
-      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,PLAINTEXT_HOST://0.0.0.0:${KAFKA_EXTERNAL_PORT:-29092},CONTROLLER://0.0.0.0:9093      
       #Lo que kafka le dice a los clientes para que se conecten, en este caso localhost:9092, pero dentro de la red de docker se conecta a broker:9092
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:${KAFKA_PORT:-9092}
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://broker:9092,PLAINTEXT_HOST://localhost:${KAFKA_EXTERNAL_PORT:-29092}
       KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
       KAFKA_CONTROLLER_QUORUM_VOTERS: ${KAFKA_NODE_ID:-1}@localhost:9093
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: ${KAFKA_REPLICATION_FACTOR:-1}
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: ${KAFKA_REPLICATION_FACTOR:-1}
@@ -39,19 +37,18 @@ services:
     image: apache/kafka:latest #misma imagen q el broker
     container_name: init-topics
     depends_on:
-      broker:
-        condition: service_healthy #no arranca hasta que el broker esté listo
+      - broker
     environment:
-      KAFKA_BOOTSTRAP_SERVERS: localhost:9092
+      KAFKA_BOOTSTRAP_SERVERS: broker:9092
     # Acá creo los topics necesarios para el TP, con el número de particiones y factor de replicación que se setea en el .env o por defecto 3 particiones y replicación 1
     #El topic 1 es el que se publica desde el microservicio de ordenes, el topic 2 es el que se consume desde el microservicio de validación y el topic 3 es la DLQ (Dead Letter Queue) para los mensajes que no se pudieron procesar correctamente en el microservicio de validación
     command: |
       bash -c "
-        kafka-topics --create --topic orders.created.v1 --bootstrap-server localhost:9092 --partitions ${KAFKA_PARTITIONS:-3} --replication-factor ${KAFKA_REPLICATION_FACTOR:-1} &&
-        kafka-topics --create --topic orders.validated.v1 --bootstrap-server localhost:9092 --partitions ${KAFKA_PARTITIONS:-3} --replication-factor ${KAFKA_REPLICATION_FACTOR:-1} &&
-        kafka-topics --create --topic orders.validation.dlq.v1 --bootstrap-server localhost:9092 --partitions ${KAFKA_PARTITIONS:-3} --replication-factor ${KAFKA_REPLICATION_FACTOR:-1} &&
+        /opt/kafka/bin/kafka-topics.sh --create --topic orders.created.v1 --bootstrap-server broker:9092 --partitions ${KAFKA_PARTITIONS:-3} --replication-factor ${KAFKA_REPLICATION_FACTOR:-1} &&
+        /opt/kafka/bin/kafka-topics.sh --create --topic orders.validated.v1 --bootstrap-server broker:9092 --partitions ${KAFKA_PARTITIONS:-3} --replication-factor ${KAFKA_REPLICATION_FACTOR:-1} &&
+        /opt/kafka/bin/kafka-topics.sh --create --topic orders.validation.dlq.v1 --bootstrap-server broker:9092 --partitions ${KAFKA_PARTITIONS:-3} --replication-factor ${KAFKA_REPLICATION_FACTOR:-1} &&
         echo 'Topics creados: orders.created.v1, orders.validated.v1, orders.validation.dlq.v1' &&
-        kafka-topics --list --bootstrap-server localhost:9092
+        /opt/kafka/bin/kafka-topics.sh --list --bootstrap-server broker:9092
       "
 
   kafka-ui: #a esto lo vemos en localhost:8080
@@ -66,10 +63,8 @@ services:
       KAFKA_CLUSTERS_0_ADVERTISED_LISTENERS: localhost:${KAFKA_PORT:-9092}
     #espera broker listo y topics creados
     depends_on:
-      broker:
-        condition: service_healthy
-      init-topics:
-        condition: service_completed_successfully
+      - broker
+      - init-topics
 
 volumes:
   kafka_data:
