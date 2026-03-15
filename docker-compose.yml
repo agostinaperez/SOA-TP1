@@ -26,11 +26,12 @@ services:
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true' #Para que se creen automáticamente los topics cuando se publiquen mensajes
     volumes: #Para persistir los datos de kafka, si no se borra todo cada vez que se levanta el contenedor
       - kafka_data:/var/lib/kafka/data
-    healthcheck: #Para verificar que el broker esté listo antes de iniciar otros servicios que dependan de él
-      test: ["CMD", "kafka-broker-api-versions", "--bootstrap-server", "localhost:9092"]
-      interval: 30s
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/kafka/bin/kafka-broker-api-versions.sh --bootstrap-server localhost:9092 || exit 1"]
+      interval: 15s
       timeout: 10s
-      retries: 5
+      retries: 10
+      start_period: 30s
 
 #Este servicio se ejecuta 1 sola vez y termina
   init-topics:
@@ -65,7 +66,16 @@ services:
     depends_on:
       - broker
       - init-topics
-
+  order-api:
+    image: lbiondi733/order-api:latest  # ← imagen de Docker Hub
+    container_name: order-api
+    ports:
+      - "8081:8081"
+    environment:
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: broker:9092
+    depends_on:
+      broker:
+        condition: service_healthy
 volumes:
   kafka_data:
     driver: local
