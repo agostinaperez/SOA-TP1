@@ -26,11 +26,13 @@ services:
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true' #Para que se creen automáticamente los topics cuando se publiquen mensajes
     volumes: #Para persistir los datos de kafka, si no se borra todo cada vez que se levanta el contenedor
       - kafka_data:/var/lib/kafka/data
-    healthcheck: #Para verificar que el broker esté listo antes de iniciar otros servicios que dependan de él
-      test: ["CMD", "kafka-broker-api-versions", "--bootstrap-server", "localhost:9092"]
+    healthcheck:
+      test: ["CMD-SHELL", "kafka-broker-api-versions --bootstrap-server localhost:9092 || nc -z localhost 9092 || exit 1"]
       interval: 30s
       timeout: 10s
-      retries: 5
+      retries: 10
+      start_period: 60s  # ← IMPORTANTE: Espera 60s al inicio
+
 
 #Este servicio se ejecuta 1 sola vez y termina
   init-topics:

@@ -1,8 +1,23 @@
-#para Dockerizar este microservicio hice:
-#mvn -N wrapper:wrapper
-#./mvnw clean package -DskipTests
-#docker build -t order-notifications .
-FROM eclipse-temurin:21-jdk-jammy
+#Acá hay que ejecutar docker build -t order-notifications .
+
+#Hago multistage building, para compilar mi código acá mismo y después poder ejecutarlo en produccion
+# Stage 1: Build
+FROM eclipse-temurin:21-jdk AS builder
+
+WORKDIR /app
+
+# Copiar archivos Maven primero (para cache de dependencias)
+COPY pom.xml .
+COPY mvnw .
+COPY .mvn .mvn
+COPY src src
+
+# Compilar
+RUN ./mvnw dependency:go-offline -B && \
+    ./mvnw clean package -DskipTests
+
+# Stage 2: Runtime
+FROM eclipse-temurin:21-jre
 
 LABEL maintainer="Agos"
 
@@ -10,25 +25,18 @@ WORKDIR /app
 
 ARG UID=1000
 ARG GID=1000
-
 # instalar curl para healthcheck
 RUN apt-get update \
     && apt-get install -y --no-install-recommends curl \
-    && rm -rf /var/lib/apt/lists/* \
-    && groupadd -g ${GID} spring \
-    && useradd -m -u ${UID} -g ${GID} spring
+    && rm -rf /var/lib/apt/lists/*
 
-# copiar jar
-COPY target/notification-0.0.1-SNAPSHOT.jar app.jar
-
-# permisos
-RUN chown spring:spring /app/app.jar
-
-USER spring
+# Copiar JAR desde el build stage
+COPY --from=builder /app/target/*.jar app.jar
+RUN chown 1000:1000 /app/app.jar
 
 ENV JAVA_OPTS="" \
     SERVER_PORT=8083 \
-    KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+    KAFKA_BOOTSTRAP_SERVERS=broker:9092
 
 EXPOSE 8083
 
