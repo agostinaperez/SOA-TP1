@@ -27,12 +27,11 @@ services:
     volumes: #Para persistir los datos de kafka, si no se borra todo cada vez que se levanta el contenedor
       - kafka_data:/var/lib/kafka/data
     healthcheck:
-      test: ["CMD-SHELL", "kafka-broker-api-versions --bootstrap-server localhost:9092 || nc -z localhost 9092 || exit 1"]
-      interval: 30s
+      test: ["CMD-SHELL", "/opt/kafka/bin/kafka-broker-api-versions.sh --bootstrap-server localhost:9092 || exit 1"]
+      interval: 15s
       timeout: 10s
       retries: 10
-      start_period: 60s  # ← IMPORTANTE: Espera 60s al inicio
-
+      start_period: 30s
 
 #Este servicio se ejecuta 1 sola vez y termina
   init-topics:
@@ -67,7 +66,38 @@ services:
     depends_on:
       - broker
       - init-topics
-  
+
+  order-audit:
+    image: twbenjaminvargas/order-audit:1.0.0
+    container_name: order-audit
+    ports:
+      - "8083:8080"
+    environment:
+      KAFKA_SERVERS: broker:9092
+    depends_on:
+      - broker
+
+  order-validator:
+    image: antobadami845/order-validator:2.0  # imagen de Docker Hub
+    container_name: order-validator
+    ports:
+      - "8082:8082"
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: broker:9092
+    depends_on:
+      - broker
+
+  order-api:
+    image: lbiondi733/order-api:3.0  # imagen de Docker Hub
+    container_name: order-api
+    ports:
+      - "8081:8081"
+    environment:
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: broker:9092
+    depends_on:
+      broker:
+        condition: service_healthy
+
   order-notifications:
     build: ./order-notifications
     container_name: order-notifications
@@ -77,7 +107,7 @@ services:
       KAFKA_BOOTSTRAP_SERVERS: broker:9092
     depends_on:
       - broker
-
+      
 volumes:
   kafka_data:
     driver: local
