@@ -66,6 +66,17 @@ services:
     depends_on:
       - broker
       - init-topics
+
+  order-validator:
+    build: ./validator
+    container_name: order-validator
+    ports:
+      - "8082:8082"
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: broker:9092
+    depends_on:
+      - broker
+
   order-api:
     image: lbiondi733/order-api:latest  # imagen de Docker Hub
     container_name: order-api
