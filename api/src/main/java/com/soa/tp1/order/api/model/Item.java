@@ -10,10 +10,8 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Item {
-    private long id;
+    private long itemId;
     private String name;
     private long price;
     private int quantity;
-    public enum Currency { USD, ARS, EUR }
-    
 }

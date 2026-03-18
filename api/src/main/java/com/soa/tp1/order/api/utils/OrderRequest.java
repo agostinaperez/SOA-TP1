@@ -15,5 +15,6 @@ import lombok.Setter;
 @AllArgsConstructor
 public class OrderRequest {
     private long amount;
+    private String currency;
     private List<Item> items;
 }

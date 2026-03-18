@@ -1,29 +1,41 @@
 package com.soa.tp1.order.validator.consumer;
 
-import com.soa.tp1.order.validator.DTO.OrderCreated;
-import com.soa.tp1.order.validator.DTO.OrderValidated;
-import com.soa.tp1.order.validator.DTO.ValidationDLQ;
+import java.util.List;
 
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
+import com.soa.tp1.order.validator.DTO.OrderCreated;
+import com.soa.tp1.order.validator.DTO.OrderValidated;
+import com.soa.tp1.order.validator.DTO.ValidationDLQ;
 
+import lombok.extern.slf4j.Slf4j;
+import tools.jackson.databind.ObjectMapper;
+@Slf4j
 @Component
 public class OrderValidatorConsumer {
 
     private final KafkaTemplate<String, Object> kafkaTemplate;
+    private final ObjectMapper objectMapper;
 
-    public OrderValidatorConsumer(KafkaTemplate<String, Object> kafkaTemplate) {
+    public OrderValidatorConsumer(KafkaTemplate<String, Object> kafkaTemplate,
+                                   ObjectMapper objectMapper) {
         this.kafkaTemplate = kafkaTemplate;
+        this.objectMapper = objectMapper;
     }
 
     @KafkaListener(topics = "orders.created.v1")
-    public void validate(OrderCreated order) {
+    public void validate(String message) {  // <-- recibís String
+        OrderCreated order;
+        try {
+            order = objectMapper.readValue(message, OrderCreated.class);
+        } catch (Exception e) {
+            log.error("Error deserializando orden: " + e.getMessage());
+            return;
+        }
 
-        System.out.println("Orden recibida: " + order.getOrderId());
-
+        log.info("Orden recibida: " + order.getOrderId());
         boolean valid =
                 order.getAmount() != null &&
                 order.getAmount() > 0 &&
@@ -45,7 +57,7 @@ public class OrderValidatorConsumer {
                     validated
             );
 
-            System.out.println("Orden válida, enviada a orders.validated.v1");
+            log.info("Orden válida, enviada a orders.validated.v1");
 
         }else{
 
@@ -59,7 +71,7 @@ public class OrderValidatorConsumer {
                     dlq
             );
 
-            System.out.println("Orden inválida, enviada a DLQ");
+            log.info("Orden inválida, enviada a DLQ");
         }
     }
 }

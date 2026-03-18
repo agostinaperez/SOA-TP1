@@ -1,7 +1,6 @@
 package com.soa.tp1.order.api.model;
 
 import java.util.ArrayList;
-import java.util.Currency;
 import java.util.Date;
 import java.util.List;
 
@@ -15,9 +14,9 @@ import lombok.Setter;
 @Getter
 @Setter
 public class Order {
-    private long id;
+    private long orderId;
     private long amount;
-    private Currency currency;
+    private String currency;
     private Date creationDate;
     private List<Item> items = new ArrayList<>();
 }
