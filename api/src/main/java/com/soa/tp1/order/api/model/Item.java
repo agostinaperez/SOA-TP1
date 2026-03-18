@@ -13,7 +13,6 @@ public class Item {
     private long id;
     private String name;
     private long price;
-    private Currency currency;
     private int quantity;
     public enum Currency { USD, ARS, EUR }
     
