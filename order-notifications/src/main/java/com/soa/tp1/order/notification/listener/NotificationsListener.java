@@ -25,11 +25,9 @@ O sea kafka guarda con el comando ack.acknowledge() los mensajes que ya procesé
         log.info("[NOTIFICACIÓN] Procesando orden validada:");
         log.info("   Order ID: {}", event.orderId());
         log.info("   Cantidad: ${}", event.amount());
-        log.info("   Fecha de creación: {}", event.creationDate());
-        log.info("   Items: {}", event.items());
+        log.info("   Tipo de moneda: {}", event.currency());
         log.info("   Offset: {}, Partition: {}", record.offset(), record.partition());
         
-        // Simula "envío notificación" (log local, NO BD compartida)
         simulateNotificationSend(event.orderId());
         
         ack.acknowledge();  // Commit manual offset
@@ -37,8 +35,6 @@ O sea kafka guarda con el comando ack.acknowledge() los mensajes que ya procesé
     }
     
     private void simulateNotificationSend(String orderId) {
-        // En prod: email/SMS/push, pero TP = logs
         log.info("Simulando envío email/SMS para orden {}", orderId);
-        // Archivo local: Files.write(Paths.get("notifications.log"), ...)
     }
 }

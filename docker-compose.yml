@@ -38,16 +38,17 @@ services:
     image: apache/kafka:latest #misma imagen q el broker
     container_name: init-topics
     depends_on:
-      - broker
+      broker:
+        condition: service_healthy
     environment:
       KAFKA_BOOTSTRAP_SERVERS: broker:9092
     # Acá creo los topics necesarios para el TP, con el número de particiones y factor de replicación que se setea en el .env o por defecto 3 particiones y replicación 1
     #El topic 1 es el que se publica desde el microservicio de ordenes, el topic 2 es el que se consume desde el microservicio de validación y el topic 3 es la DLQ (Dead Letter Queue) para los mensajes que no se pudieron procesar correctamente en el microservicio de validación
     command: |
-      bash -c "
-        /opt/kafka/bin/kafka-topics.sh --create --topic orders.created.v1 --bootstrap-server broker:9092 --partitions ${KAFKA_PARTITIONS:-3} --replication-factor ${KAFKA_REPLICATION_FACTOR:-1} &&
-        /opt/kafka/bin/kafka-topics.sh --create --topic orders.validated.v1 --bootstrap-server broker:9092 --partitions ${KAFKA_PARTITIONS:-3} --replication-factor ${KAFKA_REPLICATION_FACTOR:-1} &&
-        /opt/kafka/bin/kafka-topics.sh --create --topic orders.validation.dlq.v1 --bootstrap-server broker:9092 --partitions ${KAFKA_PARTITIONS:-3} --replication-factor ${KAFKA_REPLICATION_FACTOR:-1} &&
+      bash -c " sleep 5 &&
+        /opt/kafka/bin/kafka-topics.sh --create --if-not-exists --topic orders.created.v1 --bootstrap-server broker:9092 --partitions ${KAFKA_PARTITIONS:-3} --replication-factor ${KAFKA_REPLICATION_FACTOR:-1} &&
+        /opt/kafka/bin/kafka-topics.sh --create --if-not-exists --topic orders.validated.v1 --bootstrap-server broker:9092 --partitions ${KAFKA_PARTITIONS:-3} --replication-factor ${KAFKA_REPLICATION_FACTOR:-1} &&
+        /opt/kafka/bin/kafka-topics.sh --create --if-not-exists --topic orders.validation.dlq.v1 --bootstrap-server broker:9092 --partitions ${KAFKA_PARTITIONS:-3} --replication-factor ${KAFKA_REPLICATION_FACTOR:-1} &&
         echo 'Topics creados: orders.created.v1, orders.validated.v1, orders.validation.dlq.v1' &&
         /opt/kafka/bin/kafka-topics.sh --list --bootstrap-server broker:9092
       "
@@ -99,14 +100,15 @@ services:
         condition: service_healthy
 
   order-notifications:
-    build: ./order-notifications
+    image: aggostinaperez/order-notifications:2.0
     container_name: order-notifications
     ports:
-      - "8083:8083"
+      - "8084:8084"
     environment:
       KAFKA_BOOTSTRAP_SERVERS: broker:9092
     depends_on:
-      - broker
+      broker:
+        condition: service_healthy
       
 volumes:
   kafka_data:
