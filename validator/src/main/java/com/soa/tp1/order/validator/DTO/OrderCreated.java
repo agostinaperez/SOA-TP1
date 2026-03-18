@@ -4,6 +4,7 @@ import lombok.Data;
 import java.util.List;
 
 //evento que consume el servicio desde el topic: orders.created.v1
+//
 @Data
 public class OrderCreated {
 
