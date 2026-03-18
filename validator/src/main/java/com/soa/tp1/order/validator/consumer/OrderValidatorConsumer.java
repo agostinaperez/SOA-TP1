@@ -36,15 +36,30 @@ public class OrderValidatorConsumer {
         }
 
         log.info("Orden recibida: " + order.getOrderId());
-        boolean valid =
-                order.getAmount() != null &&
-                order.getAmount() > 0 &&
-                List.of("ARS","USD","EUR").contains(order.getCurrency()) &&
-                order.getItems() != null &&
-                !order.getItems().isEmpty()&&
-                order.getItems().stream().allMatch(i -> i.getQuantity() > 0);
+        List<String> errors = new java.util.ArrayList<>();
+
+        if (order.getAmount() == null) {
+            errors.add("Amount es null");
+        } else if (order.getAmount() <= 0) {
+            errors.add("Amount debe ser mayor a 0");
+        }
+
+        if (order.getCurrency() == null || 
+            !List.of("ARS","USD","EUR").contains(order.getCurrency())) {
+            errors.add("Currency inválida");
+        }
+
+        if (order.getItems() == null || order.getItems().isEmpty()) {
+            errors.add("Items vacío o null");
+        } else {
+            for (int i = 0; i < order.getItems().size(); i++) {
+                if (order.getItems().get(i).getQuantity() <= 0) {
+                    errors.add("Item " + i + " tiene quantity inválida");
+                }
+            }
+        }
         
-        if(valid){
+        if (errors.isEmpty()) {
 
             OrderValidated validated = new OrderValidated();
             validated.setOrderId(order.getOrderId());
@@ -63,15 +78,15 @@ public class OrderValidatorConsumer {
 
             ValidationDLQ dlq = new ValidationDLQ();
             dlq.setOrderId(order.getOrderId());
-            dlq.setReason("Validation failed");
+            dlq.setReason(String.join(", ", errors));
 
             kafkaTemplate.send(
-                    "orders.validation.dlq.v1",
-                    order.getOrderId().toString(),
-                    dlq
+                "orders.validation.dlq.v1",
+                order.getOrderId() != null ? order.getOrderId().toString() : null,
+                dlq
             );
 
-            log.info("Orden inválida, enviada a DLQ");
+            log.info("Orden inválida, enviada a DLQ: {}", dlq.getReason());
         }
     }
 }

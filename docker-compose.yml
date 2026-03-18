@@ -68,7 +68,7 @@ services:
       - init-topics
 
   order-validator:
-    build: ./validator
+    image: antobadami845/order-validator:2.0  # imagen de Docker Hub
     container_name: order-validator
     ports:
       - "8082:8082"
