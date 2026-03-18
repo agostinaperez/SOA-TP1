@@ -67,6 +67,16 @@ services:
       - broker
       - init-topics
 
+  order-audit:
+    image: twbenjaminvargas/order-audit:1.0.0
+    container_name: order-audit
+    ports:
+      - "8083:8080"
+    environment:
+      KAFKA_SERVERS: broker:9092
+    depends_on:
+      - broker
+
   order-validator:
     image: antobadami845/order-validator:2.0  # imagen de Docker Hub
     container_name: order-validator
