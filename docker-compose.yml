@@ -67,7 +67,7 @@ services:
       - broker
       - init-topics
   order-api:
-    image: lbiondi733/order-api:latest  # ← imagen de Docker Hub
+    image: lbiondi733/order-api:latest  # imagen de Docker Hub
     container_name: order-api
     ports:
       - "8081:8081"
