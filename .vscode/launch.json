@@ -1,0 +1,21 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "ValidatorApplication",
+            "request": "launch",
+            "mainClass": "com.soa.tp1.order.validator.ValidatorApplication",
+            "projectName": ""
+        },
+        {
+            "type": "java",
+            "name": "Spring Boot-ValidatorApplication<validator>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.soa.tp1.order.validator.ValidatorApplication",
+            "projectName": "validator",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        }
+    ]
+}
