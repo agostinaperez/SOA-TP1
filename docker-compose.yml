@@ -100,7 +100,7 @@ services:
         condition: service_healthy
 
   order-notifications:
-    image: aggostinaperez/order-notifications:2.0
+    image: aggostinaperez/order-notifications:5.0
     container_name: order-notifications
     ports:
       - "8084:8084"
