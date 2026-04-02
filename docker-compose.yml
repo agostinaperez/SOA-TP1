@@ -68,12 +68,14 @@ services:
       - init-topics
 
   order-audit:
-    image: twbenjaminvargas/order-audit:1.0.0
+    image: twbenjaminvargas/order-audit:1.1.0
     container_name: order-audit
     ports:
       - "8083:8080"
     environment:
       KAFKA_SERVERS: broker:9092
+      APP_KAFKA_CONSUMER_TOPIC: orders.validated.v1
+      GROUP_ID: order-audit-group
     depends_on:
       - broker
 
