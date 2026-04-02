@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class OrderValidated {
-    private String orderId;
-    private double amount;
+    private Integer orderId;
+    private Double amount;
     private String currency;
 }
