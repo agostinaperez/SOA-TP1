@@ -24,7 +24,7 @@ O sea kafka guarda con el comando ack.acknowledge() los mensajes que ya procesé
         
         log.info("[NOTIFICACIÓN] Procesando orden validada:");
         log.info("   Order ID: {}", event.orderId());
-        log.info("   Cantidad: ${}", event.amount());
+        log.info("   Cantidad: {}", event.amount());
         log.info("   Tipo de moneda: {}", event.currency());
         log.info("   Offset: {}, Partition: {}", record.offset(), record.partition());
         
