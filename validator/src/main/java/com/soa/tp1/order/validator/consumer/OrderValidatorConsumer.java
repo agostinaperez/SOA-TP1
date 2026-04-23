@@ -26,7 +26,7 @@ public class OrderValidatorConsumer {
     }
 
     @KafkaListener(topics = "orders.created.v1")
-    public void validate(String message) {  // <-- recibís String
+    public void validate(String message) {  
         OrderCreated order;
         try {
             order = objectMapper.readValue(message, OrderCreated.class);
