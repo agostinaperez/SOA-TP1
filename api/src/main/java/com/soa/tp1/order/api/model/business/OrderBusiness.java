@@ -36,12 +36,13 @@ public class OrderBusiness implements IOrderBusiness {
         order.setCreationDate(new Date());
         order.setItems(request.getItems());
         try {
-                String payload = objectMapper.writeValueAsString(order);
-                kafkaTemplate.send(TOPIC, String.valueOf(order.getOrderId()), payload);
-                log.info("Orden publicada en topic '{}': {}", TOPIC, payload);
+            String payload = objectMapper.writeValueAsString(order);
+            kafkaTemplate.send(TOPIC, String.valueOf(order.getOrderId()), payload);
+            log.info("Orden publicada en topic '{}':\n{}", TOPIC, 
+                objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(order));
         } catch (Exception e) {
-                log.error("Error serializando orden: {}", e.getMessage());
-                throw new RuntimeException("Error al publicar la orden", e);
+            log.error("Error serializando orden: {}", e.getMessage());
+            throw new RuntimeException("Error al publicar la orden", e);
         }
 
     
