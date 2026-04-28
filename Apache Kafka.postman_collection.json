@@ -1,0 +1,181 @@
+{
+	"info": {
+		"_postman_id": "0067229f-2382-447d-b34f-2250ffa22083",
+		"name": "TP1 Apache Kafka",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "48147421",
+		"_collection_link": "https://fabribiondi2002-8762908.postman.co/workspace/SOA~a8138f0a-985c-47cf-9501-e7d53d9e9850/collection/48147421-0067229f-2382-447d-b34f-2250ffa22083?action=share&source=collection_link&creator=48147421"
+	},
+	"item": [
+		{
+			"name": "Ordenes validas",
+			"item": [
+				{
+					"name": "Crear orden correcta",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"amount\": 1500,\n    \"currency\": \"USD\",\n\n    \"items\": [\n      {\n        \"itemId\": 1,\n        \"name\": \"Mouse\",\n        \"price\": 750,\n        \"quantity\": 2\n      },\n            {\n        \"itemId\": 2,\n        \"name\": \"Teclado\",\n        \"price\": 3000,\n        \"quantity\": 2\n      }\n    ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url+api+version}}/orden",
+							"host": [
+								"{{url+api+version}}"
+							],
+							"path": [
+								"orden"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Crear orden correcta Copy",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"amount\": 100,\n    \"currency\": \"ARS\",\n\n    \"items\": [\n      {\n        \"itemId\": 1,\n        \"name\": \"Microfono\",\n        \"price\": 750,\n        \"quantity\": 2\n      },\n            {\n        \"itemId\": 2,\n        \"name\": \"Pantalla\",\n        \"price\": 3000,\n        \"quantity\": 2\n      }\n    ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url+api+version}}/orden",
+							"host": [
+								"{{url+api+version}}"
+							],
+							"path": [
+								"orden"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Ordenes invalidas",
+			"item": [
+				{
+					"name": "Crear orden invalida amount <0",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"amount\": -15,\n    \"currency\": \"USD\",\n\n    \"items\": [\n      {\n        \"itemId\": 1,\n        \"name\": \"Mouse\",\n        \"price\": 750,\n        \"quantity\": 2\n      },\n            {\n        \"itemId\": 2,\n        \"name\": \"Teclado\",\n        \"price\": 3000,\n        \"quantity\": 2\n      }\n    ]\n  }",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url+api+version}}/orden",
+							"host": [
+								"{{url+api+version}}"
+							],
+							"path": [
+								"orden"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Crear orden invalida no items",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"amount\": 1500,\n    \"currency\": \"USD\",\n\n    \"items\": [\n\n    ]\n  }",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url+api+version}}/orden",
+							"host": [
+								"{{url+api+version}}"
+							],
+							"path": [
+								"orden"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Crear orden invalida currency",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"amount\": 1500,\n    \"currency\": \"asd\",\n\n    \"items\": [\n      {\n        \"itemId\": 1,\n        \"name\": \"Mouse\",\n        \"price\": 750,\n        \"quantity\": 2\n      },\n            {\n        \"itemId\": 2,\n        \"name\": \"Teclado\",\n        \"price\": 3000,\n        \"quantity\": 2\n      }\n    ]\n  }",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{url+api+version}}/orden",
+							"host": [
+								"{{url+api+version}}"
+							],
+							"path": [
+								"orden"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"requests": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"requests": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "url+api+version",
+			"value": ""
+		}
+	]
+}
